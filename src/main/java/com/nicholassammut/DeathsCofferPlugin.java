@@ -55,12 +55,11 @@ public class DeathsCofferPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
-    @Inject
-    private Gson gson;
-
 	private DeathsCofferPanel panel;
 	private NavigationButton navButton;
-    private final DeathsCofferService dcService = new DeathsCofferService(gson);
+
+    @Inject
+    private DeathsCofferService dcService;
 
 	@Override
 	protected void startUp() throws Exception

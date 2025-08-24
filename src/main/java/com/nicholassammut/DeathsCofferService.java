@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class DeathsCofferService {
 
+    @Inject
     public DeathsCofferService(Gson gson) {
         this.httpClient = HttpClient.newHttpClient();
         this.gson = gson;
