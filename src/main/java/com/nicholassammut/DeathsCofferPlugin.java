@@ -128,7 +128,7 @@ public class DeathsCofferPlugin extends Plugin
         if (event.getGameState() == GameState.LOGGED_IN) {
             // Player has just logged in.
             // Put your login logic here.
-            System.out.println("Player is now logged in!");
+            log.debug("Player is now logged in!");
             Player loggedInPlayer = client.getLocalPlayer();
             if(loggedInPlayer != null && loggedInPlayer.getName() != null) {
                 dcService.getCofferValue(loggedInPlayer.getName()).whenComplete((cofferValue, ex) -> {
@@ -147,7 +147,7 @@ public class DeathsCofferPlugin extends Plugin
             }
         } else if (event.getGameState() == GameState.LOGIN_SCREEN) {
             // Player has been returned to the login screen.
-            System.out.println("The game state has changed to LOGIN_SCREEN.");
+            log.debug("The game state has changed to LOGIN_SCREEN.");
             this.cofferValue = -1;
             SwingUtilities.invokeLater(() -> {
                 if (panel != null)
