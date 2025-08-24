@@ -134,7 +134,7 @@ public class DeathsCofferPlugin extends Plugin
                 dcService.getCofferValue(loggedInPlayer.getName()).whenComplete((cofferValue, ex) -> {
                     if (ex != null) {
                         // An error occurred (e.g., network failure, server error)
-                        System.err.println("Error fetching coffer value: " + ex.getMessage());
+                        log.error("Error fetching coffer value: " + ex.getMessage());
                         return;
                     } else {
                         this.cofferValue = cofferValue;
