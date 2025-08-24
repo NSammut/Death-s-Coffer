@@ -26,7 +26,7 @@ dependencies {
 	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
 }
 
-group = 'com.example'
+group = 'com.nicholassammut'
 version = '1.0-SNAPSHOT'
 
 tasks.withType(JavaCompile).configureEach {
@@ -37,7 +37,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('shadowJar', Jar) {
 	dependsOn configurations.testRuntimeClasspath
 	manifest {
-		attributes('Main-Class': 'com.example.ExamplePluginTest', 'Multi-Release': true)
+		attributes('Main-Class': 'com.nicholassammut.DeathsCofferPluginTest', 'Multi-Release': true)
 	}
 
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -58,4 +58,18 @@ tasks.register('shadowJar', Jar) {
 	group = BasePlugin.BUILD_GROUP
 	archiveClassifier.set('shadow')
 	archiveFileName.set("${rootProject.name}-${project.version}-all.jar")
+}
+
+task runClientDebug(type: JavaExec) {
+    group = 'RuneLite'
+    description = 'Runs the RuneLite client with the JDWP agent attached for debugging.'
+
+    // This ensures the plugin jar is built and on the classpath
+    classpath = files(jar)
+
+    // Set the main class for RuneLite
+    main = 'net.runelite.client.RuneLite'
+
+    // Hardcode the JVM debug arguments
+    jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'
 }
