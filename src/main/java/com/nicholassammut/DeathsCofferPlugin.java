@@ -1,5 +1,6 @@
 package com.nicholassammut;
 
+import com.google.gson.Gson;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import javax.swing.*;
@@ -54,9 +55,12 @@ public class DeathsCofferPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
+    @Inject
+    private Gson gson;
+
 	private DeathsCofferPanel panel;
 	private NavigationButton navButton;
-    private final DeathsCofferService dcService = new DeathsCofferService();
+    private final DeathsCofferService dcService = new DeathsCofferService(gson);
 
 	@Override
 	protected void startUp() throws Exception

@@ -4,29 +4,27 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.client.RuneLite;
 import okhttp3.*;
+
+import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 
 @Slf4j
-
 public class DeathsCofferService {
 
-    public DeathsCofferService() {
+    public DeathsCofferService(Gson gson) {
         this.httpClient = HttpClient.newHttpClient();
+        this.gson = gson;
     }
 
     private static final String API_BASE_URL = "http://osrsdeathscoffer.ddns.net";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private Gson gson = new Gson();
+    private final Gson gson;
     private HttpClient httpClient = HttpClient.newHttpClient();
     private String rsn;
 
