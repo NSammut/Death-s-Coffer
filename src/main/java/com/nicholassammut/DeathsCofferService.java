@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -24,9 +23,8 @@ public class DeathsCofferService {
     }
 
     private static final String API_BASE_URL = "https://osrsdeathscoffer.ddns.net";
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private final Gson gson;
-    private HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient;
     private String rsn;
 
     public CompletableFuture<Long> getCofferValue(String targetRsn) {

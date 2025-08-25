@@ -1,18 +1,17 @@
 package com.nicholassammut;
 
-import com.google.gson.Gson;
 import com.google.inject.Provides;
 import javax.inject.Inject;
-import javax.swing.*;
 
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
-import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageBuilder;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -25,6 +24,7 @@ import net.runelite.client.util.ImageUtil;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +42,7 @@ public class DeathsCofferPlugin extends Plugin
     private static final String COFFER_COMMAND = "!coffer";
 	private static final Pattern DEATH_CHAT_PATTERN = Pattern.compile("Death charges you [0-9,]+ x Coins\\. You have ([0-9,]+) x Coins left in Death's Coffer\\.");
     private long cofferValue = -1;
+    private boolean hasProcessedLogin = false;
 
 	@Inject
 	private Client client;
@@ -65,7 +66,7 @@ public class DeathsCofferPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		log.info("Death's Coffer startUp()!");
-		panel = new DeathsCofferPanel(dcService);
+		panel = new DeathsCofferPanel();
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -98,7 +99,7 @@ public class DeathsCofferPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded widgetLoaded) {
 		int groupId = widgetLoaded.getGroupId();
-		log.debug("Widget Group ID: {}", groupId);
+        log.debug("Widget Group ID: {}", groupId);
 		switch (groupId) {
 			case 669:
 			//case 670:
@@ -112,31 +113,56 @@ public class DeathsCofferPlugin extends Plugin
                     String playerName = loggedInPlayer.getName();
                     dcService.updateCofferValue(playerName, cofferValue);
                 }
-                panel.setCofferValue(cofferValue);
+                panel.setCofferValue(String.format("%,d gp", cofferValue));
 				break;
 		}
 	}
 
     @Subscribe
     public void onGameStateChanged(GameStateChanged event) {
-        if (event.getGameState() == GameState.LOGGED_IN) {
+        // Reset the flag when we are on the login screen, preparing for a new login
+        if (event.getGameState() == GameState.LOGIN_SCREEN) {
+            log.debug("The game state has changed to LOGIN_SCREEN.");
+            this.hasProcessedLogin = false;
+            panel.setCofferValue("Not Logged In");
+        }
+    }
+
+    @Subscribe
+    public void onGameTick(GameTick event) {
+        if (!hasProcessedLogin && client.getGameState() == GameState.LOGGED_IN) {
+            hasProcessedLogin = true;
+
             log.debug("Player is now logged in!");
             Player loggedInPlayer = client.getLocalPlayer();
-            if(loggedInPlayer != null && loggedInPlayer.getName() != null) {
+
+            if (loggedInPlayer != null && loggedInPlayer.getName() != null) {
                 dcService.getCofferValue(loggedInPlayer.getName()).whenComplete((cofferValue, ex) -> {
-                    if (ex != null) {
+                    if (ex != null || cofferValue == null) {
+                        panel.setCofferValue("Player Not Found");
                         log.error("Error fetching coffer value: " + ex.getMessage());
-                        return;
                     } else {
                         this.cofferValue = cofferValue;
-                        panel.setCofferValue(cofferValue);
+                        panel.setCofferValue(String.format("%,d gp", cofferValue));
                     }
                 });
+            } else {
+                hasProcessedLogin = false;
             }
-        } else if (event.getGameState() == GameState.LOGIN_SCREEN) {
-            log.debug("The game state has changed to LOGIN_SCREEN.");
-            this.cofferValue = -1;
-            panel.setCofferValue(-1);
+        }
+        WorldView worldview = client.getTopLevelWorldView();
+        IndexedObjectSet<? extends NPC> visibleNPCs = worldview.npcs();
+        if(visibleNPCs.stream().anyMatch((obj -> Objects.requireNonNull(obj.getName()).equals("Death")))) {
+            if(client.getVarpValue(DEATHS_COFFER_VARP) != this.cofferValue && (client.getVarpValue(DEATHS_COFFER_VARP) != 0 && client.getVarpValue(DEATHS_COFFER_VARP) != 1)) {
+                this.cofferValue = client.getVarpValue(DEATHS_COFFER_VARP);
+                Player loggedInPlayer = client.getLocalPlayer();
+                if(loggedInPlayer != null && loggedInPlayer.getName() != null) {
+                    log.debug("Player is logged in and coffer value changed");
+                    String playerName = loggedInPlayer.getName();
+                    dcService.updateCofferValue(playerName, cofferValue);
+                    panel.setCofferValue(String.format("%,d gp", this.cofferValue));
+                }
+            }
         }
     }
 
@@ -152,7 +178,7 @@ public class DeathsCofferPlugin extends Plugin
                 long cofferValue = Long.parseLong(cofferString.replace(",", ""));
                 this.cofferValue = cofferValue;
                 dcService.updateCofferValue(client.getLocalPlayer().getName(), cofferValue);
-                panel.setCofferValue(cofferValue);
+                panel.setCofferValue(String.format("%,d gp", cofferValue));
             }
         }
     }
@@ -168,15 +194,22 @@ public class DeathsCofferPlugin extends Plugin
         client.refreshChat();
 
         dcService.getCofferValue(chatMessage.getName()).thenAccept(result -> {
-            NumberFormat defaultFormatter = NumberFormat.getInstance();
-            String formattedResult = defaultFormatter.format(result);
-            String newMessage = new ChatMessageBuilder()
-                    .append(Color.YELLOW, "Coffer Value")
-                    .append(ChatColorType.HIGHLIGHT)
-                    .append(" - ")
-                    .append(formattedResult)
-                    .append(" coins.")
-                    .build();
+            String newMessage;
+            if(result != null) {
+                NumberFormat defaultFormatter = NumberFormat.getInstance();
+                String formattedResult = defaultFormatter.format(result);
+                newMessage = new ChatMessageBuilder()
+                        .append(Color.YELLOW, "Coffer Value")
+                        .append(ChatColorType.HIGHLIGHT)
+                        .append(" - ")
+                        .append(formattedResult)
+                        .append(" coins.")
+                        .build();
+            } else {
+                newMessage = new ChatMessageBuilder()
+                        .append(Color.RED, "Player Not Found!")
+                        .build();
+            }
 
             messageNode.setRuneLiteFormatMessage(newMessage);
             client.refreshChat();
