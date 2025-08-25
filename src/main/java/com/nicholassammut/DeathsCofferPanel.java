@@ -13,20 +13,15 @@ public class DeathsCofferPanel extends PluginPanel {
 
     private final JLabel cofferValueLabel;
 
-    // Constructor to build the panel
     public DeathsCofferPanel(DeathsCofferService dcService) {
-        // Main panel setup
         setLayout(new BorderLayout());
         setBackground(new Color(25, 25, 25));
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // === MAIN CONTENT ===
-        // This panel will hold all the content, from header to info label
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setOpaque(false);
 
-        // Header Label
         JLabel headerLabel = new JLabel("<html><div style='text-align:center;'><b>☠️ Death's Coffer ☠️</b></div></html>");
         headerLabel.setForeground(new Color(220, 220, 220));
         headerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -34,7 +29,6 @@ public class DeathsCofferPanel extends PluginPanel {
         contentPanel.add(headerLabel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Coffer Value Panel
         JPanel cofferPanel = new JPanel(new BorderLayout());
         cofferPanel.setOpaque(false);
         cofferPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -52,29 +46,22 @@ public class DeathsCofferPanel extends PluginPanel {
         cofferPanel.add(titleLabel, BorderLayout.WEST);
         cofferPanel.add(cofferValueLabel, BorderLayout.EAST);
 
-        // Add the coffer panel to the main content panel
         contentPanel.add(cofferPanel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Info label under the Coffer Value
         JLabel infoLabel = new JLabel("<html><div style='text-align:center;'>Type <b>!dc</b> or <b>!deathscoffer</b> in game to show off your coffer value to others!</div></html>");
         infoLabel.setForeground(new Color(180, 180, 180));
         infoLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Add a small spacing and then the label
         contentPanel.add(Box.createRigidArea(new Dimension(0, 6)));
         contentPanel.add(infoLabel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // This is the main change: add the content panel to the NORTH of a new container panel.
         JPanel container = new JPanel(new BorderLayout());
         container.setOpaque(false);
         container.add(contentPanel, BorderLayout.NORTH);
         add(container, BorderLayout.CENTER);
-
-        // === FOOTER ===
-        // ... (The rest of your footer code goes here, it's already correct) ...
 
         JPanel footerPanel = new JPanel();
         footerPanel.setLayout(new BoxLayout(footerPanel, BoxLayout.Y_AXIS));
@@ -117,6 +104,5 @@ public class DeathsCofferPanel extends PluginPanel {
 
     public void setCofferValue(long value) {
         SwingUtilities.invokeLater(() -> cofferValueLabel.setText(String.format("%,d gp", value)));
-
     }
 }

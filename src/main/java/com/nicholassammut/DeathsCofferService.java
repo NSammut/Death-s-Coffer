@@ -33,17 +33,15 @@ public class DeathsCofferService {
         CompletableFuture<Long> future = new CompletableFuture<>();
         rsn = targetRsn.replaceAll(" ", "%20");
         rsn = rsn.replace("\u00A0", "%20");
-        // FIX 1: Add the normalized RSN to the URI
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_BASE_URL + "/lookup/" + rsn))
                 .header("Content-Type", "application/json")
-                .GET() // Explicitly set the method to GET
+                .GET()
                 .build();
 
-        // FIX 2: Add the BodyHandler to the sendAsync call
         CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
 
-        // FIX 3: Parse the response and complete the future
         futureResponse.whenComplete((response, throwable) -> {
             if (throwable != null) {
                 log.error("Failed to get coffer value.", throwable);

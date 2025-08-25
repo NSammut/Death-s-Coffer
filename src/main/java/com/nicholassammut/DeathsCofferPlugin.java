@@ -67,7 +67,6 @@ public class DeathsCofferPlugin extends Plugin
 		log.info("Death's Coffer startUp()!");
 		panel = new DeathsCofferPanel(dcService);
 
-		// Load an icon for your plugin panel
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
 		navButton = NavigationButton.builder()
@@ -98,7 +97,6 @@ public class DeathsCofferPlugin extends Plugin
 
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded widgetLoaded) {
-		// The getGroupId() method gives us the ID of the parent interface that was loaded.
 		int groupId = widgetLoaded.getGroupId();
 		log.debug("Widget Group ID: {}", groupId);
 		switch (groupId) {
@@ -114,11 +112,7 @@ public class DeathsCofferPlugin extends Plugin
                     String playerName = loggedInPlayer.getName();
                     dcService.updateCofferValue(playerName, cofferValue);
                 }
-
-                SwingUtilities.invokeLater(() -> {
-                    panel.setCofferValue(cofferValue);
-                });
-				// You could update a panel or trigger other logic here.
+                panel.setCofferValue(cofferValue);
 				break;
 		}
 	}
@@ -126,35 +120,23 @@ public class DeathsCofferPlugin extends Plugin
     @Subscribe
     public void onGameStateChanged(GameStateChanged event) {
         if (event.getGameState() == GameState.LOGGED_IN) {
-            // Player has just logged in.
-            // Put your login logic here.
             log.debug("Player is now logged in!");
             Player loggedInPlayer = client.getLocalPlayer();
             if(loggedInPlayer != null && loggedInPlayer.getName() != null) {
                 dcService.getCofferValue(loggedInPlayer.getName()).whenComplete((cofferValue, ex) -> {
                     if (ex != null) {
-                        // An error occurred (e.g., network failure, server error)
                         log.error("Error fetching coffer value: " + ex.getMessage());
                         return;
                     } else {
                         this.cofferValue = cofferValue;
-                        SwingUtilities.invokeLater(() -> {
-                            panel.setCofferValue(cofferValue);
-                        });
-
+                        panel.setCofferValue(cofferValue);
                     }
                 });
             }
         } else if (event.getGameState() == GameState.LOGIN_SCREEN) {
-            // Player has been returned to the login screen.
             log.debug("The game state has changed to LOGIN_SCREEN.");
             this.cofferValue = -1;
-            SwingUtilities.invokeLater(() -> {
-                if (panel != null)
-                {
-                    panel.setCofferValue(-1);
-                }
-            });
+            panel.setCofferValue(-1);
         }
     }
 
@@ -164,22 +146,13 @@ public class DeathsCofferPlugin extends Plugin
         // Only look at GAME messages
         if (event.getType() == ChatMessageType.GAMEMESSAGE) {
             String message = event.getMessage();
-
-            // Try to match the pattern
             Matcher matcher = DEATH_CHAT_PATTERN.matcher(message);
             if (matcher.find()) {
-                // Extract the coffer value from the first capturing group
                 String cofferString = matcher.group(1);
-                // Remove commas and parse to long
                 long cofferValue = Long.parseLong(cofferString.replace(",", ""));
                 this.cofferValue = cofferValue;
                 dcService.updateCofferValue(client.getLocalPlayer().getName(), cofferValue);
-                // Update the sidebar panel safely on the EDT
-                SwingUtilities.invokeLater(() -> {
-                    if (panel != null) {
-                        panel.setCofferValue(cofferValue);
-                    }
-                });
+                panel.setCofferValue(cofferValue);
             }
         }
     }
@@ -210,7 +183,6 @@ public class DeathsCofferPlugin extends Plugin
         });
     }
 
-	// This is standard boilerplate for a plugin, providing configuration support if needed later.
 	@Provides
 	DeathsCofferConfig provideConfig(ConfigManager configManager)
 	{
