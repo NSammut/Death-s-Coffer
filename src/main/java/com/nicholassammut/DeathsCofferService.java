@@ -23,7 +23,7 @@ public class DeathsCofferService {
         this.gson = gson;
     }
 
-    private static final String API_BASE_URL = "http://osrsdeathscoffer.ddns.net";
+    private static final String API_BASE_URL = "https://osrsdeathscoffer.ddns.net";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private final Gson gson;
     private HttpClient httpClient = HttpClient.newHttpClient();
