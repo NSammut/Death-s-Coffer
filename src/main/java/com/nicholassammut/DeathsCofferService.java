@@ -6,7 +6,6 @@ import com.google.gson.JsonParseException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -14,16 +13,15 @@ import java.util.function.Consumer;
 @Slf4j
 public class DeathsCofferService {
 
-    @Inject
-    public DeathsCofferService(Gson gson, OkHttpClient httpClient) {
-        this.gson = gson;
-        this.httpClient = httpClient;
-    }
-
     private static final String API_BASE_URL = "https://osrsdeathscoffer.ddns.net";
     private final Gson gson;
     private final OkHttpClient httpClient;
     private String rsn;
+
+    public DeathsCofferService(Gson gson, OkHttpClient httpClient) {
+        this.gson = gson;
+        this.httpClient = httpClient;
+    }
 
     public void getCofferValue(String targetRsn, Consumer<Long> callback) {
 

@@ -1,18 +1,16 @@
 package com.nicholassammut;
 
+import com.google.gson.Gson;
 import com.google.inject.Provides;
-import javax.inject.Inject;
-import javax.swing.*;
-
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageBuilder;
-import net.runelite.api.events.ChatMessage;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -21,8 +19,11 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
+import okhttp3.OkHttpClient;
 
-import java.awt.Color;
+import javax.inject.Inject;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -221,4 +222,9 @@ public class DeathsCofferPlugin extends Plugin
 	{
 		return configManager.getConfig(DeathsCofferConfig.class);
 	}
+
+    @Provides
+    DeathsCofferService provideDeathsCofferService(Gson gson, OkHttpClient httpClient) {
+        return new DeathsCofferService(gson, httpClient);
+    }
 }
