@@ -2,6 +2,7 @@ package com.nicholassammut;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
+import javax.swing.*;
 
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
@@ -24,6 +25,8 @@ import net.runelite.client.util.ImageUtil;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,17 +34,16 @@ import java.util.regex.Pattern;
 @Slf4j
 @PluginDescriptor(
 	name = "Death's Coffer",
-	description = "Use !dc or !deathscoffer to check your coffer's value.",
-	tags = {"death", "coffer", "pvm", "value", "chat", "command"}
+	description = "Type !coffer, !dc or !deathscoffer to check your coffer's value and show it to others! Activate by paying a death fee or opening the Death's Coffer interface.",
+	tags = {"death", "coffer", "pvm", "value", "chat", "command", "coin", "gp"}
 )
 public class DeathsCofferPlugin extends Plugin
 {
 	private static final int DEATHS_COFFER_VARP = 261;
-	private static final String DC_COMMAND = "!dc";
-    private static final String DEATHSCOFFER_COMMAND = "!deathscoffer";
-    private static final String COFFER_COMMAND = "!coffer";
+
+    private static final List<String> COMMANDS = Arrays.asList("!dc", "!deathscoffer", "!coffer");
 	private static final Pattern DEATH_CHAT_PATTERN = Pattern.compile("Death charges you [0-9,]+ x Coins\\. You have ([0-9,]+) x Coins left in Death's Coffer\\.");
-    private long cofferValue = -1;
+    private long cofferValue;
     private boolean hasProcessedLogin = false;
 
 	@Inject
@@ -77,22 +79,19 @@ public class DeathsCofferPlugin extends Plugin
 			.build();
 
 		clientToolbar.addNavigation(navButton);
-		
-		// Register the chat commands when the plugin starts.
-		chatCommandManager.registerCommandAsync(DC_COMMAND, this::updateChat);
-        chatCommandManager.registerCommandAsync(DEATHSCOFFER_COMMAND, this::updateChat);
-        chatCommandManager.registerCommandAsync(COFFER_COMMAND, this::updateChat);
+
+        for (String command : COMMANDS) {
+            chatCommandManager.registerCommand(command, this::updateChat);
+        }
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		clientToolbar.removeNavigation(navButton);
-
-		// Unregister the chat commands when the plugin stops.
-		chatCommandManager.unregisterCommand(DC_COMMAND);
-		chatCommandManager.unregisterCommand(DEATHSCOFFER_COMMAND);
-        chatCommandManager.unregisterCommand(COFFER_COMMAND);
+		for (String command : COMMANDS) {
+            chatCommandManager.unregisterCommand(command);
+        }
 		log.info("Death's Coffer shutDown()!");
 	}
 
@@ -137,19 +136,17 @@ public class DeathsCofferPlugin extends Plugin
             Player loggedInPlayer = client.getLocalPlayer();
 
             if (loggedInPlayer != null && loggedInPlayer.getName() != null) {
-                dcService.getCofferValue(loggedInPlayer.getName()).whenComplete((cofferValue, ex) -> {
-                    if (ex != null || cofferValue == null) {
+                dcService.getCofferValue(loggedInPlayer.getName(), (cofferValue) -> {
+                    if (cofferValue == null) {
                         panel.setCofferValue("Player Not Found");
-                        log.error("Error fetching coffer value: " + ex.getMessage());
                     } else {
                         this.cofferValue = cofferValue;
                         panel.setCofferValue(String.format("%,d gp", cofferValue));
                     }
                 });
-            } else {
-                hasProcessedLogin = false;
+                }
             }
-        }
+
         WorldView worldview = client.getTopLevelWorldView();
         IndexedObjectSet<? extends NPC> visibleNPCs = worldview.npcs();
         if(visibleNPCs.stream().anyMatch((obj -> Objects.requireNonNull(obj.getName()).equals("Death")))) {
@@ -190,14 +187,16 @@ public class DeathsCofferPlugin extends Plugin
                 .append("Retrieving coffer value, please wait...")
                 .build();
 
-        messageNode.setRuneLiteFormatMessage(loadingMessage);
-        client.refreshChat();
+        SwingUtilities.invokeLater(() -> {
+            messageNode.setRuneLiteFormatMessage(loadingMessage);
+            client.refreshChat();
+        });
 
-        dcService.getCofferValue(chatMessage.getName()).thenAccept(result -> {
+        dcService.getCofferValue(chatMessage.getName(), (cofferValue) -> {
             String newMessage;
-            if(result != null) {
+            if(cofferValue != null) {
                 NumberFormat defaultFormatter = NumberFormat.getInstance();
-                String formattedResult = defaultFormatter.format(result);
+                String formattedResult = defaultFormatter.format(cofferValue);
                 newMessage = new ChatMessageBuilder()
                         .append(Color.YELLOW, "Coffer Value")
                         .append(ChatColorType.HIGHLIGHT)
@@ -210,9 +209,10 @@ public class DeathsCofferPlugin extends Plugin
                         .append(Color.RED, "Player Not Found!")
                         .build();
             }
-
-            messageNode.setRuneLiteFormatMessage(newMessage);
-            client.refreshChat();
+            SwingUtilities.invokeLater(() -> {
+                messageNode.setRuneLiteFormatMessage(newMessage);
+                client.refreshChat();
+            });
         });
     }
 

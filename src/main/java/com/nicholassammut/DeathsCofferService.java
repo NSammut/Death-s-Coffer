@@ -4,73 +4,70 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Slf4j
 public class DeathsCofferService {
 
     @Inject
-    public DeathsCofferService(Gson gson) {
-        this.httpClient = HttpClient.newHttpClient();
+    public DeathsCofferService(Gson gson, OkHttpClient httpClient) {
         this.gson = gson;
+        this.httpClient = httpClient;
     }
 
     private static final String API_BASE_URL = "https://osrsdeathscoffer.ddns.net";
     private final Gson gson;
-    private final HttpClient httpClient;
+    private final OkHttpClient httpClient;
     private String rsn;
 
-    public CompletableFuture<Long> getCofferValue(String targetRsn) {
-        CompletableFuture<Long> future = new CompletableFuture<>();
+    public void getCofferValue(String targetRsn, Consumer<Long> callback) {
+
         rsn = targetRsn.replaceAll(" ", "%20");
         rsn = rsn.replace("\u00A0", "%20");
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_BASE_URL + "/lookup/" + rsn))
-                .header("Content-Type", "application/json")
-                .GET()
+        Request request = new Request.Builder()
+                .url(API_BASE_URL + "/lookup/" + rsn)
+                .addHeader("Content-Type", "application/json")
+                .get()
                 .build();
 
-        CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
-
-        futureResponse.whenComplete((response, throwable) -> {
-            if (throwable != null) {
-                log.error("Failed to get coffer value.", throwable);
-                future.completeExceptionally(throwable);
-                return;
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                log.error("Request to grab coffer value failed: {}", e.getMessage());
+                callback.accept(null);
             }
 
-            if (response.statusCode() == 404) {
-                // Player not found, so complete the future with null
-                log.info("Player not found: {}", rsn);
-                future.complete(null);
-                return;
-            }
-
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                try {
-                    JsonObject jsonResponse = gson.fromJson(response.body(), JsonObject.class);
-                    long value = jsonResponse.get("coffer_value").getAsLong();
-                    log.info("Successfully got coffer value for {}: {}", rsn, value);
-                    future.complete(value);
-                } catch (JsonParseException | NullPointerException e) {
-                    log.error("Failed to parse JSON response for {}.", rsn, e);
-                    future.completeExceptionally(e);
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.code() == 404) {
+                    log.info("Player not found: {}", rsn);
+                    callback.accept(null);
                 }
-            } else {
-                log.error("Failed to get coffer value. Status code: {}", response.statusCode());
-                future.completeExceptionally(new IOException("Server returned an error."));
+
+                if (response.isSuccessful()) {
+                    try (ResponseBody responseBody = response.body()) {
+                        JsonObject jsonResponse = gson.fromJson(responseBody.string(), JsonObject.class);
+                        long value = jsonResponse.get("coffer_value").getAsLong();
+                        log.info("Successfully got coffer value for {}: {}", rsn, value);
+                        callback.accept(value);
+                    } catch (JsonParseException | NullPointerException e) {
+                        log.error("Failed to parse JSON response for {}.", rsn, e);
+                        callback.accept(null);
+                    }
+                } else {
+                    log.error("Failed to get coffer value. Status code: {}", response.code());
+                    callback.accept(null);
+                }
+                response.close();
             }
         });
-
-        return future;
     }
 
     public void updateCofferValue(String username, long value) {
@@ -78,34 +75,32 @@ public class DeathsCofferService {
         json.addProperty("rsn", username);
         json.addProperty("value", value);
 
-        // Build the request body
-        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(json.toString());
+        RequestBody requestBody = RequestBody.create(
+                MediaType.get("application/json"),
+                gson.toJson(json)
+        );
 
-        // Build the HttpRequest with the API endpoint, headers, and body
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_BASE_URL + "/update"))
-                .header("Content-Type", "application/json") // Specify content type
-                .POST(bodyPublisher)
+        Request request = new Request.Builder()
+                .url(API_BASE_URL + "/update")
+                .addHeader("Content-Type", "application/json") // Specify content type
+                .post(requestBody)
                 .build();
 
-        // Send the request asynchronously
-        CompletableFuture<HttpResponse<String>> futureResponse = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                log.error("Failed to update coffer value: {}", e.getMessage());
+            }
 
-        // Handle the response when it's available
-        futureResponse.whenComplete((response, throwable) -> {
-            if (throwable != null) {
-                // An error occurred during the request
-                log.error("Failed to update coffer value: {}", throwable.getMessage());
-            } else {
-                // The request was successful (200-level response)
-                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
                     log.info("Successfully updated coffer value for {}", username);
                 } else {
-                    // An error occurred on the server side
-                    log.error("Failed to update coffer value. Status code: {}", response.statusCode());
+                    log.error("Failed to update coffer value. Status code: {}", response.code());
                 }
-            }
+                response.close();
+            };
         });
-
     }
 }
