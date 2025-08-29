@@ -1,6 +1,5 @@
 package com.nicholassammut;
 
-import com.google.gson.Gson;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
@@ -19,7 +18,6 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
-import okhttp3.OkHttpClient;
 
 import javax.inject.Inject;
 import javax.swing.*;
@@ -28,7 +26,6 @@ import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -148,18 +145,16 @@ public class DeathsCofferPlugin extends Plugin
                 }
             }
 
-        WorldView worldview = client.getTopLevelWorldView();
-        IndexedObjectSet<? extends NPC> visibleNPCs = worldview.npcs();
-        if(visibleNPCs.stream().anyMatch((obj -> Objects.requireNonNull(obj.getName()).equals("Death")))) {
-            if(client.getVarpValue(DEATHS_COFFER_VARP) != this.cofferValue && (client.getVarpValue(DEATHS_COFFER_VARP) != 0 && client.getVarpValue(DEATHS_COFFER_VARP) != 1)) {
-                this.cofferValue = client.getVarpValue(DEATHS_COFFER_VARP);
-                Player loggedInPlayer = client.getLocalPlayer();
-                if(loggedInPlayer != null && loggedInPlayer.getName() != null) {
-                    log.debug("Player is logged in and coffer value changed");
-                    String playerName = loggedInPlayer.getName();
-                    dcService.updateCofferValue(playerName, cofferValue);
-                    panel.setCofferValue(String.format("%,d gp", this.cofferValue));
-                }
+        int[] regions = client.getTopLevelWorldView().getMapRegions();
+        boolean isInDeathsDomain = Arrays.stream(regions).anyMatch(element -> element == 12633);
+        if (client.getVarpValue(DEATHS_COFFER_VARP) != this.cofferValue && (client.getVarpValue(DEATHS_COFFER_VARP) != 0 && client.getVarpValue(DEATHS_COFFER_VARP) != 1)) {
+            this.cofferValue = client.getVarpValue(DEATHS_COFFER_VARP);
+            Player loggedInPlayer = client.getLocalPlayer();
+            if (loggedInPlayer != null && loggedInPlayer.getName() != null) {
+                log.debug("Player is logged in and coffer value changed");
+                String playerName = loggedInPlayer.getName();
+                dcService.updateCofferValue(playerName, cofferValue);
+                panel.setCofferValue(String.format("%,d gp", this.cofferValue));
             }
         }
     }
@@ -222,9 +217,4 @@ public class DeathsCofferPlugin extends Plugin
 	{
 		return configManager.getConfig(DeathsCofferConfig.class);
 	}
-
-    @Provides
-    DeathsCofferService provideDeathsCofferService(Gson gson, OkHttpClient httpClient) {
-        return new DeathsCofferService(gson, httpClient);
-    }
 }

@@ -6,6 +6,7 @@ import com.google.gson.JsonParseException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -18,6 +19,7 @@ public class DeathsCofferService {
     private final OkHttpClient httpClient;
     private String rsn;
 
+    @Inject
     public DeathsCofferService(Gson gson, OkHttpClient httpClient) {
         this.gson = gson;
         this.httpClient = httpClient;
