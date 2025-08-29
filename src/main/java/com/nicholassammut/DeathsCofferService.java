@@ -8,9 +8,8 @@ import okhttp3.*;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Slf4j
 public class DeathsCofferService {
@@ -53,7 +52,7 @@ public class DeathsCofferService {
 
                 if (response.isSuccessful()) {
                     try (ResponseBody responseBody = response.body()) {
-                        JsonObject jsonResponse = gson.fromJson(responseBody.string(), JsonObject.class);
+                        JsonObject jsonResponse = gson.fromJson(Objects.requireNonNull(responseBody).string(), JsonObject.class);
                         long value = jsonResponse.get("coffer_value").getAsLong();
                         log.info("Successfully got coffer value for {}: {}", rsn, value);
                         callback.accept(value);
@@ -93,14 +92,14 @@ public class DeathsCofferService {
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
                     log.info("Successfully updated coffer value for {}", username);
                 } else {
                     log.error("Failed to update coffer value. Status code: {}", response.code());
                 }
                 response.close();
-            };
+            }
         });
     }
 }
