@@ -115,7 +115,7 @@ public class DeathsCofferPanel extends PluginPanel {
         creditsLabel.setForeground(FOOTER_TEXT_COLOR);
         creditsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel donationLabel = new JLabel("<html><div style='text-align:center;'><a href=''>Buy me a coffee ☕</a></div></html>");
+        JLabel donationLabel = new JLabel("<html><div style='text-align:center;'>Buy me a coffee ☕</div></html>");
         donationLabel.setFont(FONT_SMALL);
         donationLabel.setForeground(LINK_COLOR);
         donationLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
