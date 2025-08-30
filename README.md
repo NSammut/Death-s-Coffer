@@ -33,7 +33,7 @@ Type any of the following commands into your public or private chat to see your 
 This plugin is available on the **RuneLite Plugin Hub**.
 
 1.  Open the RuneLite client.
-2.  Navigate to the **Plugin Hub** (the jigsaw puzzle icon).
+2.  Navigate to the **Plugin Hub**.
 3.  Search for `Death's Coffer`.
 4.  Click the **Install** button.
 
