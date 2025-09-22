@@ -6,6 +6,7 @@ import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -89,9 +90,8 @@ public class DeathsCofferPlugin extends Plugin
 		int groupId = widgetLoaded.getGroupId();
         log.debug("Widget Group ID: {}", groupId);
 		switch (groupId) {
-			case 669:
-			//case 670:
-			case 671:
+            case InterfaceID.DEATH_OFFICE:
+            case InterfaceID.DEATH_COFFER:
                 // This code runs when the player opens the sacrifice chest
 				log.debug("Death's Coffer interface opened.");
                 long cofferValue = client.getVarpValue(DEATHS_COFFER_VARP);
