@@ -17,7 +17,6 @@ public class DeathsCofferService {
     private static final String API_BASE_URL = "https://osrsdeathscoffer.ddns.net";
     private final Gson gson;
     private final OkHttpClient httpClient;
-    private String rsn;
 
     @Inject
     public DeathsCofferService(Gson gson, OkHttpClient httpClient) {
@@ -26,9 +25,10 @@ public class DeathsCofferService {
     }
 
     public void getCofferValue(String targetRsn, Consumer<Long> callback) {
+        targetRsn = targetRsn.replaceAll(" ", "%20");
+        targetRsn = targetRsn.replace("\u00A0", "%20");
 
-        rsn = targetRsn.replaceAll(" ", "%20");
-        rsn = rsn.replace("\u00A0", "%20");
+        String rsn = targetRsn;
 
         Request request = new Request.Builder()
                 .url(API_BASE_URL + "/lookup/" + rsn)
@@ -46,7 +46,7 @@ public class DeathsCofferService {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.code() == 404) {
-                    log.info("Player not found: {}", rsn);
+                    log.debug("Player not found: {}", rsn);
                     callback.accept(null);
                 }
 
@@ -54,7 +54,7 @@ public class DeathsCofferService {
                     try (ResponseBody responseBody = response.body()) {
                         JsonObject jsonResponse = gson.fromJson(Objects.requireNonNull(responseBody).string(), JsonObject.class);
                         long value = jsonResponse.get("coffer_value").getAsLong();
-                        log.info("Successfully got coffer value for {}: {}", rsn, value);
+                        log.debug("Successfully got coffer value for {}: {}", rsn, value);
                         callback.accept(value);
                     } catch (JsonParseException | NullPointerException e) {
                         log.error("Failed to parse JSON response for {}.", rsn, e);
@@ -94,7 +94,7 @@ public class DeathsCofferService {
             @Override
             public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                    log.info("Successfully updated coffer value for {}", username);
+                    log.debug("Successfully updated coffer value for {}", username);
                 } else {
                     log.error("Failed to update coffer value. Status code: {}", response.code());
                 }
