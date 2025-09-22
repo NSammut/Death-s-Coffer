@@ -138,9 +138,10 @@ public class DeathsCofferPlugin extends Plugin
 
         int[] regions = client.getTopLevelWorldView().getMapRegions();
         boolean isInDeathsDomain = Arrays.stream(regions).anyMatch(element -> element == 12633);
+        int realCofferValue = client.getVarpValue(DEATHS_COFFER_VARP);
         if (isInDeathsDomain) {
-            if (client.getVarpValue(DEATHS_COFFER_VARP) != this.cofferValue && (client.getVarpValue(DEATHS_COFFER_VARP) != 0 && client.getVarpValue(DEATHS_COFFER_VARP) != 1)) {
-                this.cofferValue = client.getVarpValue(DEATHS_COFFER_VARP);
+            if (realCofferValue != this.cofferValue && (realCofferValue != 0 && realCofferValue != 1)) {
+                this.cofferValue = realCofferValue;
                 Player loggedInPlayer = client.getLocalPlayer();
                 if (loggedInPlayer != null && loggedInPlayer.getName() != null) {
                     log.debug("Player is logged in and coffer value changed");
