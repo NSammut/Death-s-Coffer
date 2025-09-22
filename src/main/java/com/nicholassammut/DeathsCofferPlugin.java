@@ -22,7 +22,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +35,6 @@ public class DeathsCofferPlugin extends Plugin
 {
 	private static final int DEATHS_COFFER_VARP = 261;
 
-    private static final List<String> COMMANDS = Arrays.asList("!dc", "!deathscoffer", "!coffer");
 	private static final Pattern DEATH_CHAT_PATTERN = Pattern.compile("Death charges you [0-9,]+ x Coins\\. You have ([0-9,]+) x Coins left in Death's Coffer\\.");
     private long cofferValue;
     private boolean hasProcessedLogin = false;
@@ -72,19 +70,19 @@ public class DeathsCofferPlugin extends Plugin
 
 		clientToolbar.addNavigation(navButton);
 
-        for (String command : COMMANDS) {
-            chatCommandManager.registerCommand(command, this::updateChat);
-        }
+        chatCommandManager.registerCommandAsync("!dc", this::updateChat);
+        chatCommandManager.registerCommandAsync("!deathscoffer", this::updateChat);
+        chatCommandManager.registerCommandAsync("!coffer", this::updateChat);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		clientToolbar.removeNavigation(navButton);
-		for (String command : COMMANDS) {
-            chatCommandManager.unregisterCommand(command);
-        }
-		log.info("Death's Coffer shutDown()!");
+
+        chatCommandManager.unregisterCommand("!dc");
+        chatCommandManager.unregisterCommand("!deathscoffer");
+        chatCommandManager.unregisterCommand("!coffer");
 	}
 
 	@Subscribe
