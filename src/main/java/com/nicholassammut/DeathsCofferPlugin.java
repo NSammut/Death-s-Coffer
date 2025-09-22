@@ -1,6 +1,5 @@
 package com.nicholassammut;
 
-import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.ChatMessage;
@@ -10,8 +9,6 @@ import net.runelite.api.events.WidgetLoaded;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatCommandManager;
 import net.runelite.client.chat.ChatMessageBuilder;
-import net.runelite.client.chat.ChatMessageManager;
-import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -49,9 +46,6 @@ public class DeathsCofferPlugin extends Plugin
 
 	@Inject
 	private ChatCommandManager chatCommandManager;
-
-	@Inject
-    private ChatMessageManager chatMessageManager;
 
 	@Inject
 	private ClientToolbar clientToolbar;
