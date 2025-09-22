@@ -57,7 +57,6 @@ public class DeathsCofferPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		log.info("Death's Coffer startUp()!");
 		panel = new DeathsCofferPanel();
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
