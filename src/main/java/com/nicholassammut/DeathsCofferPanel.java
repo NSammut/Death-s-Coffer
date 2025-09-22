@@ -1,6 +1,7 @@
 package com.nicholassammut;
 
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.util.LinkBrowser;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -9,7 +10,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URI;
 
 public class DeathsCofferPanel extends PluginPanel {
 
@@ -126,7 +126,7 @@ public class DeathsCofferPanel extends PluginPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
-                    Desktop.getDesktop().browse(new URI("https://www.paypal.com/donate/?hosted_button_id=XDH4UECGZG5PS"));
+                    LinkBrowser.browse("https://www.paypal.com/donate/?hosted_button_id=XDH4UECGZG5PS");
                 } catch (Exception ignored) {
                     // Handle exception if needed
                 }
