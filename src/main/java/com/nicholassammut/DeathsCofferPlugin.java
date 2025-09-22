@@ -213,10 +213,4 @@ public class DeathsCofferPlugin extends Plugin
             });
         });
     }
-
-	@Provides
-	DeathsCofferConfig provideConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(DeathsCofferConfig.class);
-	}
 }
