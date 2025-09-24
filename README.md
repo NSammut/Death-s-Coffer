@@ -41,7 +41,13 @@ This plugin is available on the **RuneLite Plugin Hub**.
 
 ### 🎮 Usage
 
-Once installed, a new icon will appear on your RuneLite side toolbar. Click this icon to open the Death's Coffer panel and view your current value. You can also simply use the chat commands mentioned above to retrieve the value at any time.
+Once installed, a new icon will appear on your RuneLite side toolbar. Click this icon to open the Death's Coffer panel and view your current value. 
+
+<img width="269" height="439" alt="Image" src="https://github.com/user-attachments/assets/bd8ff419-8065-4ee9-a9ca-0127f295bdbe" />
+
+You can also simply use the chat commands mentioned above to retrieve the value at any time. The coffer value will appear on other OSRS player's screens as long as they have this plugin installed and enabled.
+
+<img width="505" height="39" alt="Image" src="https://github.com/user-attachments/assets/847fd2ca-219f-4ca4-a4ae-5bf03a616a27" />
 
 To initialize your coffer value, you must either pay a death fee or visit Death's Domain and open the Death's Coffer
 interface.
