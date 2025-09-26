@@ -11,7 +11,6 @@ A RuneLite plugin that helps you keep track of your Death's Coffer value by disp
 * **Real-time Value Display**: See your current coffer value in a clean, dedicated side panel.
 * **Chat Commands**: Quickly check your coffer's value by typing a simple command in the chat.
 * **Automatic Updates**: The plugin automatically updates your coffer's value when:
-    * You log in to the game.
     * You open the Death's Coffer interface.
     * The value is mentioned in the game chat (e.g., after paying a death fee).
 * **Asynchronous API Calls**: All data fetching is done in the background to ensure your game client remains smooth and responsive.
